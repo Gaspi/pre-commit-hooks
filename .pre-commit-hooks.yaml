@@ -1,0 +1,5 @@
+- id: validate-schema-types
+  name: Validate Schema Types
+  entry: validate_schema_types
+  language: python
+  files: (^|/|\\)values\.schema\.json$
