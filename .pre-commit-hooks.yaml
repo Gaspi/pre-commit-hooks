@@ -1,5 +1,10 @@
 - id: validate-json-schemas
-  name: Validate JSON Schemas
+  name: Validate JSON schema files
   entry: validate-json-schemas
+  language: python
+  files: (^|/|\\)values\.schema\.json$
+- id: missing-attributes-schemas
+  name: Check for missing attributes in JSON schema files
+  entry: missing-attributes-schemas
   language: python
   files: (^|/|\\)values\.schema\.json$

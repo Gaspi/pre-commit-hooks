@@ -2,73 +2,47 @@
 
 import argparse
 import json
-import os
 import sys
+from jsonschema import validator_for, check_schema, ValidationError
 from collections.abc import Sequence
 from typing import Generator, Tuple
 
-def issues_in_file(file_path: str, config: dict) -> Generator[Tuple[str,str], None, None]:
+def issue_in_file(file_path: str, forbid_legacy=True):
     with open(file_path, 'r') as f:
         try:
-            schema = json.load(f)
+            json_content = json.load(f)
         except json.JSONDecodeError as e:
-            return iter((([], f"Error parsing JSON: {e}"), ))
-    return issues_in_schema(schema, config)
-
-def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, None]:
-    def _issues(value, current_key: list[str]):
-        if not isinstance(value, dict):
-            yield (current_key, f"Expected object, got {type(value)}")
-        elif "type" not in value:
-            yield (current_key, "Missing 'type' attribute")
-        else:
-            if config.check_default and "default" not in value:
-                yield (current_key, "Missing 'default' attribute")
-            if value["type"] == "object":
-                if config.check_properties and "properties" not in value:
-                    yield (current_key, "Missing 'properties' attribute")
-                elif "properties" in value:
-                    if not isinstance(value["properties"], dict):
-                        yield (current_key+["properties"], f"Expected object, got {type(value['properties'])}")
-                    else:
-                        for key, value in value["properties"].items():
-                            yield from _issues(value, current_key+["properties", key])
-            if value["type"] == "array":
-                if "items" in value:
-                    yield from _issues(value["items"], current_key+["items"])
-                elif config.check_items:
-                    yield (current_key, "Missing 'items' attribute in array")
-    return _issues(schema, [])
+            return f"Error parsing JSON: {e}"
+    if "$schema" not in json_content:
+        return f"Missing `$schema` attribute"
+    schema = json_content["$schema"]
+    if not isinstance(schema, str):
+        return "The `$schema` attribute should be a string"
+    if forbid_legacy and schema in("http://json-schema.org/schema#", "http://json-schema.org/schema"):
+        return "Legacy `$schema` used. Use Draft 7 instead (http://json-schema.org/draft-07/schema#)"
+    try:
+        validator_for(json_content).check_schema(json_content)
+    except ValidationError as e:
+        return f"Schema validation error: {e}"
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('filenames', nargs='*', help='Filenames to fix')
     parser.add_argument(
-        '--check-default',
+        '--forbid-legacy',
         action='store_true',
-        dest='check_default',
-        help='Require defaults to be systematically specified',
-    )
-    parser.add_argument(
-        '--check-properties',
-        action='store_true',
-        dest='check_properties',
-        help='Require properties to be systematically specified for object',
-    )
-    parser.add_argument(
-        '--check-items',
-        action='store_true',
-        dest='check_items',
-        help='Require items to be systematically specified for arrays',
+        dest='forbid_legacy',
+        help='Forbids legacy https://json-schema.org/draft/2020-12/schema schema validator',
     )
     args = parser.parse_args(argv)
 
-    all_valid = True
-    for schema_file in args.filenames:
-        for key, issue in issues_in_file(schema_file, args):
-            print(f"In file {schema_file}, at key {'.'.join(key) or '[root]'}: {issue}")
-            all_valid = False
-    return 1 if not all_valid else 0
+    retval  = 0
+    for filename in args.filenames:
+        issue = issue_in_file(filename, forbid_legacy=args.forbid_legacy)
+        if issue:
+            print(f"{filename}: {issue}")
+            retval = 1
+    return retval
 
 if __name__ == "__main__":
     raise SystemExit(main())
