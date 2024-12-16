@@ -3,7 +3,7 @@
 import argparse
 import json
 import sys
-from jsonschema.validators import validator_for, check_schema
+from jsonschema.validators import validator_for
 from jsonschema import ValidationError
 from collections.abc import Sequence
 from typing import Generator, Tuple
