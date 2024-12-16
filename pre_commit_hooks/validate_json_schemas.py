@@ -12,11 +12,11 @@ def issues_in_file(file_path: str, config: dict) -> Generator[Tuple[str,str], No
         try:
             schema = json.load(f)
         except json.JSONDecodeError as e:
-            return iter(( ([], f"Error parsing JSON: {e}") ))
+            return iter((([], f"Error parsing JSON: {e}"), ))
     return issues_in_schema(schema, config)
 
 def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, None]:
-    def _issues(value, current_key: list[str] = []):
+    def _issues(value, current_key: list[str]):
         if not isinstance(value, dict):
             yield (current_key, f"Expected object, got {type(value)}")
         elif "type" not in value:
