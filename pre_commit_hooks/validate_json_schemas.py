@@ -23,7 +23,7 @@ def issue_in_file(file_path: str, forbid_legacy=True):
         return "Legacy `$schema` used. Use Draft 7 instead (http://json-schema.org/draft-07/schema#)"
     try:
         validator_for(json_content).check_schema(json_content)
-    except ValidationError as e:
+    except SchemaError as e:
         return f"Schema validation error: {e}"
 
 def main(argv: Sequence[str] | None = None) -> int:
