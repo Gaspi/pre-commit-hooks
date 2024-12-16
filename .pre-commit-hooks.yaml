@@ -1,5 +1,5 @@
-- id: validate-schema-types
-  name: Validate Schema Types
-  entry: validate_schema_types
+- id: validate-schema-json
+  name: Validate JSON Schemas
+  entry: validate_json_schemas
   language: python
   files: (^|/|\\)values\.schema\.json$
