@@ -8,3 +8,7 @@
   entry: missing-attributes-schemas
   language: python
   files: (^|/|\\)values\.schema\.json$
+- id: just-fail
+  name: Simply fail with a specified given message. Use files/exclude to warn before commit of specific files modifications.
+  entry: just-fail
+  language: python
