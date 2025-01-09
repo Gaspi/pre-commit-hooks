@@ -36,7 +36,8 @@ def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, No
                 elif "patternProperties" in value:
                     pass
                 elif "additionalProperties" in value:
-                    pass
+                    if isinstance(value["additionalProperties"], dict):
+                        yield from _issues(value["additionalProperties"], current_key+["additionalProperties"])
                 elif config.check_properties:
                     yield (current_key, "Missing 'properties', 'patternProperties' or 'additionalProperties' attribute in object")
             if value["type"] == "array":
