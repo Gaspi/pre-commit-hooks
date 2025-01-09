@@ -19,6 +19,8 @@ def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, No
     def _issues(value, current_key: list[str]):
         if not isinstance(value, dict):
             yield (current_key, f"Expected object, got {type(value)}")
+        elif "#ref" in value:
+            pass # This object is considered a reference, not a schema
         elif "type" not in value:
             yield (current_key, "Missing 'type' attribute")
         else:
