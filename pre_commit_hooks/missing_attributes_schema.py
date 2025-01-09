@@ -25,14 +25,18 @@ def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, No
             if config.check_default and "default" not in value:
                 yield (current_key, "Missing 'default' attribute")
             if value["type"] == "object":
-                if config.check_properties and "properties" not in value:
-                    yield (current_key, "Missing 'properties' attribute")
-                elif "properties" in value:
+                if "properties" in value:
                     if not isinstance(value["properties"], dict):
                         yield (current_key+["properties"], f"Expected object, got {type(value['properties'])}")
                     else:
-                        for key, value in value["properties"].items():
-                            yield from _issues(value, current_key+["properties", key])
+                        for k, v in value["properties"].items():
+                            yield from _issues(v, current_key+["properties", k])
+                elif "patternProperties" in value:
+                    pass
+                elif "additionalProperties" in value:
+                    pass
+                elif config.check_properties:
+                    yield (current_key, "Missing 'properties', 'patternProperties' or 'additionalProperties' attribute in object")
             if value["type"] == "array":
                 if "items" in value:
                     yield from _issues(value["items"], current_key+["items"])

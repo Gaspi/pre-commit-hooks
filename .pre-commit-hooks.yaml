@@ -9,6 +9,7 @@
   language: python
   files: (^|/|\\)values\.schema\.json$
 - id: just-fail
-  name: Simply fail with a specified given message. Use files/exclude to warn before commit of specific files modifications.
+  name: Simply fail with a specified given message.
+  # NOTE: Use files/exclude to warn before commit of specific files modifications.
   entry: just-fail
   language: python
