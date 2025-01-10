@@ -1,20 +1,20 @@
 - id: validate-json-schemas
-  name: Validate JSON schema files
+  name: validate JSON schema files
   entry: validate-json-schemas
   language: python
   files: (^|/|\\)values\.schema\.json$
 - id: missing-attributes-schemas
-  name: Check for missing attributes in JSON schema files
+  name: check for missing attributes in JSON schema files
   entry: missing-attributes-schemas
   language: python
   files: (^|/|\\)values\.schema\.json$
 - id: just-fail
-  name: Fail if any file matches
+  name: fail if any file matches
   # NOTE: Use files/exclude to warn before commit of specific files modifications.
   entry: just-fail
   language: python
 - id: version-bump
-  name: Check version bump
+  name: check version bump
   entry: version-bump
   language: python
   pass_filenames: false

@@ -27,6 +27,7 @@ def is_version_unbumped_chart_folder(path: Path | str) -> bool:
                 _memo[path] = not old_version or not new_version or Version(new_version.group(1)) <= Version(old_version.group(1))
             except Exception:
                 _memo[path] = False
+        print("Memo",path,_memo[path])
     return _memo[path]
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -36,6 +37,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         help='Restrict check to this branch',
     )
     args = parser.parse_args(argv)
+    print("Branch:", args.branch)
 
     try:
         # If the hook is restricted to some (other) branches, return
@@ -45,12 +47,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         changed_files = set(Path(f) for f in cmd_output('git', 'diff', '-staged', '--name-only').splitlines())
     except CalledProcessError:
         return 0
+    print("changed_files:", changed_files)
     
     files_in_unbumped_charts = [
         file
         for file in changed_files
         if any(is_version_unbumped_chart_folder(folder) for folder in file.parents)
     ]
+    print("files_in_unbumped_charts:", files_in_unbumped_charts)
     for file in files_in_unbumped_charts:
         print("File {} has staged modification but there is no bump in its helm chart version".format(file))
     return int(bool(files_in_unbumped_charts))
