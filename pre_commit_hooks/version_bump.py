@@ -44,7 +44,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         #if args.branch and cmd_output("git", "rev-parse", "--abbrev-ref", "HEAD").strip() not in args.branch:
         #    return 0
         # Else retrieve all staged files
-    changed_files = set(Path(f) for f in cmd_output('git', 'diff', '-staged', '--name-only').splitlines())
+    changed_files = set(Path(f) for f in cmd_output('git', 'diff', '--staged', '--name-only').splitlines())
     #except CalledProcessError:
     #    return 0
     print("changed_files:", changed_files)
