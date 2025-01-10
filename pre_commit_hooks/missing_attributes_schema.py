@@ -15,8 +15,19 @@ def issues_in_file(file_path: str, config: dict) -> Generator[Tuple[str,str], No
             return iter((([], f"Error parsing JSON: {e}"), ))
     return issues_in_schema(schema, config)
 
+def json_type_to_python(type_str: str) -> type:
+    return {
+        "string": str,
+        "integer": int,
+        "number": float,
+        "boolean": bool,
+        "array": list,
+        "object": dict,
+        "null": type(None)
+    }.get(type_str, object)
+
 def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, None]:
-    def _issues(value, current_key: list[str], chk_default):
+    def _issues(value, current_key: list[str], check_defaults):
         if not isinstance(value, dict):
             yield (current_key, f"Expected object, got {type(value)}")
         elif "$ref" in value:
@@ -24,20 +35,22 @@ def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, No
         elif "type" not in value:
             yield (current_key, "Missing 'type' attribute")
         else:
+            keep_check_defaults = check_defaults and "default" not in value and "overwriteDefaultWith" not in value.get("x-onyxia",{})
             if "default" in value:
-                chk_default = False
+                if not isinstance(value["default"], json_type_to_python(value["type"])):
+                    yield (current_key, f"Default value has not the expected type")
             if value["type"] == "object":
                 if "properties" in value:
                     if not isinstance(value["properties"], dict):
                         yield (current_key+["properties"], f"Expected object, got {type(value['properties'])}")
                     elif len(value["properties"]) == 0:
-                        if chk_default:
+                        if keep_check_defaults:
                             yield (current_key, "Missing the 'default' attribute and no properties are specified to fetch defaults from")
                     else:
                         for k, v in value["properties"].items():
-                            yield from _issues(v, current_key+["properties", k], chk_default)
+                            yield from _issues(v, current_key+["properties", k], keep_check_defaults)
                 else:
-                    if chk_default:
+                    if keep_check_defaults:
                         yield (current_key, "Missing the 'default' attribute and no properties are specified to fetch defaults from")
                     if "patternProperties" in value:
                         pass
@@ -48,23 +61,23 @@ def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, No
                         if config.check_properties:
                             yield (current_key, "Missing 'properties', 'patternProperties' or 'additionalProperties' attribute in object")
             else:
-                if chk_default:
+                if keep_check_defaults:
                     # No default was provided
                     yield (current_key, "Missing the 'default' attribute of non-object type")
                 if value["type"] == "array":
                     if "items" in value:
-                        yield from _issues(value["items"], current_key+["items"], chk_default)
+                        yield from _issues(value["items"], current_key+["items"], keep_check_defaults)
                     elif config.check_items:
                         yield (current_key, "Missing 'items' attribute in array")
-    return _issues(schema, [], config.check_default)
+    return _issues(schema, [], config.check_defaults)
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('filenames', nargs='*', help='Filenames to fix')
     parser.add_argument(
-        '--check-default',
+        '--check-defaults',
         action='store_true',
-        dest='check_default',
+        dest='check_defaults',
         help='Require defaults to be systematically specified',
     )
     parser.add_argument(
