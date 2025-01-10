@@ -9,7 +9,13 @@
   language: python
   files: (^|/|\\)values\.schema\.json$
 - id: just-fail
-  name: Simply fail with a specified given message.
+  name: Fail if any file matches
   # NOTE: Use files/exclude to warn before commit of specific files modifications.
   entry: just-fail
   language: python
+- id: version-bump
+  name: Check version bump
+  entry: version-bump
+  language: python
+  pass_filenames: false
+  always_run: true

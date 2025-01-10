@@ -2,8 +2,6 @@
 
 import argparse
 import json
-import os
-import sys
 from collections.abc import Sequence
 from typing import Generator, Tuple
 

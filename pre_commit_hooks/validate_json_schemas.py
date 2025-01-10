@@ -4,9 +4,8 @@ import argparse
 import json
 import sys
 from jsonschema.validators import validator_for
-from jsonschema import ValidationError
+from jsonschema import SchemaError
 from collections.abc import Sequence
-from typing import Generator, Tuple
 
 def issue_in_file(file_path: str, forbid_legacy=True):
     with open(file_path, 'r') as f:
