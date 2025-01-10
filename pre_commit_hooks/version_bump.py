@@ -57,7 +57,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print("files_in_unbumped_charts:", files_in_unbumped_charts)
     for file in files_in_unbumped_charts:
         print("File {} has staged modification but there is no bump in its helm chart version".format(file))
-    return int(bool(files_in_unbumped_charts))
+    return 1 #int(bool(files_in_unbumped_charts))
 
 if __name__ == "__main__":
     raise SystemExit(main())
