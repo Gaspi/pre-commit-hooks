@@ -39,14 +39,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     print("Branch:", args.branch)
 
-    #try:
+    try:
         # If the hook is restricted to some (other) branches, return
-        #if args.branch and cmd_output("git", "rev-parse", "--abbrev-ref", "HEAD").strip() not in args.branch:
-        #    return 0
+        if args.branch and cmd_output("git", "rev-parse", "--abbrev-ref", "HEAD").strip() not in args.branch:
+            return 0
         # Else retrieve all staged files
-    changed_files = set(Path(f) for f in cmd_output('git', 'diff', '--staged', '--name-only').splitlines())
-    #except CalledProcessError:
-    #    return 0
+        changed_files = set(Path(f) for f in cmd_output('git', 'diff', '--staged', '--name-only').splitlines())
+    except CalledProcessError:
+        return 0
     print("changed_files:", changed_files)
     
     files_in_unbumped_charts = [
@@ -57,7 +57,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print("files_in_unbumped_charts:", files_in_unbumped_charts)
     for file in files_in_unbumped_charts:
         print("File {} has staged modification but there is no bump in its helm chart version".format(file))
-    return 1 #int(bool(files_in_unbumped_charts))
+    return int(bool(files_in_unbumped_charts))
 
 if __name__ == "__main__":
     raise SystemExit(main())
