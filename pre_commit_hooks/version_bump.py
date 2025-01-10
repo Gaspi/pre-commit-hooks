@@ -41,8 +41,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         # If the hook is restricted to some (other) branches, return
-        if args.branch and cmd_output("git", "rev-parse", "--abbrev-ref", "HEAD").strip() not in args.branch:
-            return 0
+        #if args.branch and cmd_output("git", "rev-parse", "--abbrev-ref", "HEAD").strip() not in args.branch:
+        #    return 0
         # Else retrieve all staged files
         changed_files = set(Path(f) for f in cmd_output('git', 'diff', '-staged', '--name-only').splitlines())
     except CalledProcessError:
