@@ -11,10 +11,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         type=str,
         dest='message',
         help='Warning message to emit',
-        default="""
-        You are trying to push modifications to a protected file: {}.
-        If everything else looks fine and you know what you are doing, use `--no-verify` to skip all checks.
-        """,
+        default="""You are trying to push modifications to a protected file: {}.
+        If everything else looks fine and you know what you are doing, use `--no-verify` to skip all checks.""",
     )
     args = parser.parse_args(argv)
     for filename in args.filenames:

@@ -53,7 +53,7 @@ def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, No
                     yield (current_key, "Missing the 'default' attribute of non-object type")
                 if value["type"] == "array":
                     if "items" in value:
-                        yield from _issues(value["items"], current_key+["items"])
+                        yield from _issues(value["items"], current_key+["items"], chk_default)
                     elif config.check_items:
                         yield (current_key, "Missing 'items' attribute in array")
     return _issues(schema, [], config.check_default)
