@@ -16,7 +16,7 @@ def issues_in_file(file_path: str, config: dict) -> Generator[Tuple[str,str], No
     return issues_in_schema(schema, config)
 
 def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, None]:
-    def _issues(value, current_key: list[str]):
+    def _issues(value, current_key: list[str], chk_default):
         if not isinstance(value, dict):
             yield (current_key, f"Expected object, got {type(value)}")
         elif "$ref" in value:
@@ -24,28 +24,39 @@ def issues_in_schema(schema, config: dict) -> Generator[Tuple[str,str], None, No
         elif "type" not in value:
             yield (current_key, "Missing 'type' attribute")
         else:
-            if config.check_default and "default" not in value:
-                yield (current_key, "Missing 'default' attribute")
+            if "default" in value:
+                chk_default = False
             if value["type"] == "object":
                 if "properties" in value:
                     if not isinstance(value["properties"], dict):
                         yield (current_key+["properties"], f"Expected object, got {type(value['properties'])}")
+                    elif len(value["properties"]) == 0:
+                        if chk_default:
+                            yield (current_key, "Missing the 'default' attribute and no properties are specified to fetch defaults from")
                     else:
                         for k, v in value["properties"].items():
-                            yield from _issues(v, current_key+["properties", k])
-                elif "patternProperties" in value:
-                    pass
-                elif "additionalProperties" in value:
-                    if isinstance(value["additionalProperties"], dict):
-                        yield from _issues(value["additionalProperties"], current_key+["additionalProperties"])
-                elif config.check_properties:
-                    yield (current_key, "Missing 'properties', 'patternProperties' or 'additionalProperties' attribute in object")
-            if value["type"] == "array":
-                if "items" in value:
-                    yield from _issues(value["items"], current_key+["items"])
-                elif config.check_items:
-                    yield (current_key, "Missing 'items' attribute in array")
-    return _issues(schema, [])
+                            yield from _issues(v, current_key+["properties", k], chk_default)
+                else:
+                    if chk_default:
+                        yield (current_key, "Missing the 'default' attribute and no properties are specified to fetch defaults from")
+                    if "patternProperties" in value:
+                        pass
+                    elif "additionalProperties" in value:
+                        if isinstance(value["additionalProperties"], dict):
+                            yield from _issues(value["additionalProperties"], current_key+["additionalProperties"], False)
+                    else:
+                        if config.check_properties:
+                            yield (current_key, "Missing 'properties', 'patternProperties' or 'additionalProperties' attribute in object")
+            else:
+                if chk_default:
+                    # No default was provided
+                    yield (current_key, "Missing the 'default' attribute of non-object type")
+                if value["type"] == "array":
+                    if "items" in value:
+                        yield from _issues(value["items"], current_key+["items"])
+                    elif config.check_items:
+                        yield (current_key, "Missing 'items' attribute in array")
+    return _issues(schema, [], config.check_default)
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
