@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse, re
+
+from pre_commit_hooks.utils import CalledProcessError, cmd_output
+
 from collections.abc import Sequence
+
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
@@ -20,10 +24,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     reg = re.compile(args.regex)
     all_valid = True
-    for staged_file in cmd_output('git', 'diff', '--staged', '--name-only').splitlines():
-        if reg.match(staged_file):
-            all_valid = False
-            print(args.message.format(staged_file))
+    try:
+        for staged_file in cmd_output('git', 'diff', '--staged', '--name-only').splitlines():
+            if reg.match(staged_file):
+                all_valid = False
+                print(args.message.format(staged_file))
+    except CalledProcessError:
+        print("Command failed: `git diff --staged --name-only`")
+        return 1
     return 0 if all_valid else 1
 
 if __name__ == "__main__":
