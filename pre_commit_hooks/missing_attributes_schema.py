@@ -97,7 +97,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         for key, issue in issues_in_file(schema_file, args):
             print(f"In file {schema_file}, at key {'.'.join(key) or '[root]'}: {issue}")
             all_valid = False
-    return 1 if not all_valid else 0
+    return 0 if all_valid else 1
 
 if __name__ == "__main__":
     raise SystemExit(main())

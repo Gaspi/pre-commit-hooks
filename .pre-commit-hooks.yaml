@@ -10,10 +10,9 @@
   language: python
   files: (^|/|\\)values\.schema\.json$
 
-- id: just-fail
-  name: fail if any file matches
-  # NOTE: Use files/exclude to warn before commit of specific files modifications.
-  entry: just-fail
+- id: check-match
+  name: Fails if any staged files matches the given regex
+  entry: check-match
   language: python
 
 - id: version-bump
