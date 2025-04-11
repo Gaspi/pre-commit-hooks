@@ -24,7 +24,7 @@ def is_version_unbumped_chart_folder(path: Path | str) -> bool:
                 diff = cmd_output("git", "diff", "--staged", str(chart_yaml))
                 old_version = re.search(r'\n\-version:\s*([0-9\.]+)\s*\n', diff)
                 new_version = re.search(r'\n\+version:\s*([0-9\.]+)\s*\n', diff)
-                _memo[path] = not old_version or not new_version or Version(new_version.group(1)) <= Version(old_version.group(1))
+                _memo[path] = old_version and (not new_version or Version(new_version.group(1)) <= Version(old_version.group(1)))
             except Exception:
                 _memo[path] = False
     return _memo[path]
